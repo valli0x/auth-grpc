@@ -9,7 +9,7 @@ type Storage interface {
 
 	Delete(ctx context.Context, key string) error
 
-	List(ctx context.Context) ([]*Entry, error)
+	List(ctx context.Context) ([]string, error)
 }
 
 type Entry struct {

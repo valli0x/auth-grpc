@@ -9,12 +9,12 @@ import (
 
 type InmemStorage struct {
 	sync.RWMutex
-	db map[string]interface{}
+	db map[string]*storage.Entry
 }
 
 func NewInmem() (storage.Storage, error) {
 	return &InmemStorage{
-		db: make(map[string]interface{}, 100), // just 100, I dont want thinking about it
+		db: make(map[string]*storage.Entry, 100), // just 100, I hope you don't want to add more entries
 	}, nil
 }
 
@@ -40,7 +40,7 @@ func (i *InmemStorage) Get(ctx context.Context, key string) (*storage.Entry, err
 	i.RLock()
 	defer i.RUnlock()
 
-	return nil, nil
+	return i.GetInternal(ctx, key)
 }
 
 func (i *InmemStorage) GetInternal(ctx context.Context, key string) (*storage.Entry, error) {
@@ -51,7 +51,7 @@ func (i *InmemStorage) GetInternal(ctx context.Context, key string) (*storage.En
 	}
 
 	if entry, ok := i.db[key]; ok {
-		return entry.(*storage.Entry), nil
+		return entry, nil
 	}
 
 	return nil, nil
@@ -75,25 +75,25 @@ func (i *InmemStorage) DeleteInternal(ctx context.Context, key string) error {
 	return nil
 }
 
-func (i *InmemStorage) List(ctx context.Context) ([]*storage.Entry, error) {
+func (i *InmemStorage) List(ctx context.Context) ([]string, error) {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.ListInternal(ctx)
 }
 
-func (i *InmemStorage) ListInternal(ctx context.Context) ([]*storage.Entry, error) {
+func (i *InmemStorage) ListInternal(ctx context.Context) ([]string, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
 
-	listEntry := []*storage.Entry{}
+	keys := make([]string, 0, 100)
 
-	for _, entry := range i.db {
-		listEntry = append(listEntry, entry.(*storage.Entry))
+	for key, _ := range i.db {
+		keys = append(keys, key)
 	}
 
-	return listEntry, nil
+	return keys, nil
 }
