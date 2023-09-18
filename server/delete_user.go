@@ -12,7 +12,7 @@ func (s *Server) Delete(ctx context.Context, r *pb.DeleteRequest) (*pb.Empty, er
 
 	id := r.GetId()
 
-	//TODO: handler for admin
+	// TODO: handler for admin
 
 	entry, err := s.db.Get(ctx, id)
 	if err != nil {

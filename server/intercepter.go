@@ -42,7 +42,7 @@ func (s *Server) valid(ctx context.Context, authorization []string, method strin
 	}
 
 	auth := strings.Split(string(basic), ":")
-	if len(auth) < 2 {
+	if len(auth) != 2 {
 		return false
 	}
 	username := auth[0]
