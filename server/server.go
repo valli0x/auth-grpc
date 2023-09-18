@@ -6,11 +6,14 @@ import (
 	"github.com/valli0x/auth-grpc/storage"
 	pb "github.com/valli0x/grpc-proto/auth-grpc/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
-const (
-	UserNotFoundError = "user not found"
+var (
+	errNotFound     = status.Errorf(codes.NotFound, "not found")
+	errAlreadyExist = status.Errorf(codes.AlreadyExists, "already exist")
 )
 
 type Server struct {

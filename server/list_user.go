@@ -5,6 +5,8 @@ import (
 
 	"github.com/valli0x/auth-grpc/models"
 	pb "github.com/valli0x/grpc-proto/auth-grpc/api"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) List(ctx context.Context, r *pb.Empty) (*pb.ListResponse, error) {
@@ -14,9 +16,10 @@ func (s *Server) List(ctx context.Context, r *pb.Empty) (*pb.ListResponse, error
 
 	ids, err := s.db.List(ctx)
 	if err != nil {
-		return resp, err
+		return resp, status.Errorf(codes.Internal, err.Error())
 	}
 
+	usernames := map[string]struct{}{}
 	for _, id := range ids {
 		entry, err := s.db.Get(ctx, id)
 		if err != nil {
@@ -25,7 +28,11 @@ func (s *Server) List(ctx context.Context, r *pb.Empty) (*pb.ListResponse, error
 
 		user, ok := entry.Val.(*models.User)
 		if !ok {
-			return resp, nil
+			return resp, status.Error(codes.Internal, "")
+		}
+
+		if _, ok := usernames[user.ID]; ok {
+			continue
 		}
 
 		resp.Users = append(resp.Users, &pb.User{
@@ -33,6 +40,7 @@ func (s *Server) List(ctx context.Context, r *pb.Empty) (*pb.ListResponse, error
 			Email:    user.Email,
 			Username: user.Username,
 		})
+		usernames[user.ID] = struct{}{}
 	}
 
 	return resp, nil

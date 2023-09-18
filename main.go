@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/go-uuid"
+	"github.com/spf13/viper"
 	"github.com/valli0x/auth-grpc/models"
 	"github.com/valli0x/auth-grpc/server"
 	"github.com/valli0x/auth-grpc/storage"
@@ -12,12 +14,17 @@ import (
 )
 
 const (
-	port          = ":8080"
+	address       = ":8080"
+	adminEmail    = "admin@minsk.by"
 	adminUsername = "admin"
 	adminPass     = "admin"
 )
 
 func main() {
+	viper.BindEnv("port", "GRPC_PORT")
+	viper.SetDefault("port", address)
+	port := viper.GetString("port")
+
 	// create database
 	db, err := inmem.NewInmem()
 	if err != nil {
@@ -35,8 +42,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
-	
+
 	// start grpc server
+	fmt.Printf("grpc server starting on port %s...\n", port)
 	if err := grpcServer.RunServer(port); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
@@ -50,14 +58,23 @@ func rootUser(db storage.Storage) error {
 
 	user := &models.User{
 		ID:       uuid,
-		Email:    "hello@bel.by",
+		Email:    adminEmail,
 		Username: adminUsername,
 		Password: []byte(adminPass),
 		Admin:    true,
 	}
 
+	// by ID
 	if err := db.Put(context.Background(), &storage.Entry{
 		Key: user.ID,
+		Val: user,
+	}); err != nil {
+		return err
+	}
+
+	// by Username
+	if err := db.Put(context.Background(), &storage.Entry{
+		Key: user.Username,
 		Val: user,
 	}); err != nil {
 		return err

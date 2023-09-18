@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/valli0x/auth-grpc/models"
@@ -17,13 +16,13 @@ func (s *Server) Create(ctx context.Context, r *pb.CreateRequest) (*pb.CreateRes
 	username := r.User.GetUsername()
 	password := r.User.GetPassword()
 
-	if s.exits(username) {
-		return resp, errors.New("username is not unique")
+	if s.exits(ctx, username) {
+		return resp, errAlreadyExist
 	}
 
 	uuid, err := uuid.GenerateUUID()
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 
 	user := &models.User{
@@ -33,11 +32,20 @@ func (s *Server) Create(ctx context.Context, r *pb.CreateRequest) (*pb.CreateRes
 		Password: []byte(password), // maybe sha256 hash?
 	}
 
+	// by ID
 	if err := s.db.Put(ctx, &storage.Entry{
 		Key: user.ID,
 		Val: user,
 	}); err != nil {
-		return nil, err
+		return resp, err
+	}
+
+	// by Username
+	if err := s.db.Put(ctx, &storage.Entry{
+		Key: user.Username,
+		Val: user,
+	}); err != nil {
+		return resp, err
 	}
 
 	resp.Id = user.ID

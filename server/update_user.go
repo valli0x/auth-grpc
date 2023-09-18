@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/valli0x/auth-grpc/models"
 	"github.com/valli0x/auth-grpc/storage"
@@ -23,11 +22,11 @@ func (s *Server) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.Empty, er
 	}
 
 	if entry == nil {
-		return resp, errors.New(UserNotFoundError)
+		return resp, errNotFound
 	}
 
-	if s.exits(username) {
-		return resp, errors.New("username is not unique")
+	if s.exits(ctx, username) {
+		return resp, errAlreadyExist
 	}
 
 	user := &models.User{
@@ -37,8 +36,17 @@ func (s *Server) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.Empty, er
 		Password: []byte(password),
 	}
 
+	// by ID
 	if err := s.db.Put(ctx, &storage.Entry{
 		Key: user.ID,
+		Val: user,
+	}); err != nil {
+		return resp, err
+	}
+
+	// by Username
+	if err := s.db.Put(ctx, &storage.Entry{
+		Key: user.Username,
 		Val: user,
 	}); err != nil {
 		return resp, err

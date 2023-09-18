@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"strings"
 
 	"github.com/valli0x/auth-grpc/models"
@@ -23,13 +24,13 @@ func (s *Server) ValidToken(ctx context.Context, req any, info *grpc.UnaryServer
 		return nil, errMissingMetadata
 	}
 
-	if !s.valid(md["authorization"], info.FullMethod) {
+	if !s.valid(ctx, md["authorization"], info.FullMethod) {
 		return nil, errInvalidToken
 	}
 	return handler(ctx, req)
 }
 
-func (s *Server) valid(authorization []string, method string) bool {
+func (s *Server) valid(ctx context.Context, authorization []string, method string) bool {
 	if len(authorization) < 1 {
 		return false
 	}
@@ -47,13 +48,13 @@ func (s *Server) valid(authorization []string, method string) bool {
 	username := auth[0]
 	password := auth[1]
 
-	if !s.checkPass(username, password) {
+	if !s.checkPass(ctx, username, password) {
 		return false
 	}
 
 	switch method {
 	case "/authgrpc.Users/Create", "/authgrpc.Users/Update", "/authgrpc.Users/Delete":
-		if !s.admin(username) {
+		if !s.admin(ctx, username) {
 			return false
 		}
 	}
@@ -61,75 +62,50 @@ func (s *Server) valid(authorization []string, method string) bool {
 	return true
 }
 
-// It's not very efficient, I know
-func (s *Server) checkPass(username, password string) bool {
-	ids, err := s.db.List(context.Background())
+func (s *Server) checkPass(ctx context.Context, username, password string) bool {
+	user, err := s.userByUsername(ctx, username)
 	if err != nil {
 		return false
 	}
-
-	for _, id := range ids {
-		entry, err := s.db.Get(context.Background(), id)
-		if err != nil {
-			return false
-		}
-
-		user, ok := entry.Val.(*models.User)
-		if !ok {
-			return false
-		}
-
-		if user.Username == username && string(user.Password) == password {
-			return true
-		}
+	if user.Username == username && string(user.Password) == password {
+		return true
 	}
 	return false
 }
 
-func (s *Server) exits(username string) bool {
-	ids, err := s.db.List(context.Background())
+func (s *Server) exits(ctx context.Context, username string) bool {
+	user, err := s.userByUsername(ctx, username)
 	if err != nil {
 		return false
 	}
-
-	for _, id := range ids {
-		entry, err := s.db.Get(context.Background(), id)
-		if err != nil {
-			return false
-		}
-
-		user, ok := entry.Val.(*models.User)
-		if !ok {
-			return false
-		}
-
-		if user.Username == username {
-			return true
-		}
+	if user.Username == username {
+		return true
 	}
 	return false
 }
 
-func (s *Server) admin(username string) bool {
-	ids, err := s.db.List(context.Background())
+func (s *Server) admin(ctx context.Context, username string) bool {
+	user, err := s.userByUsername(ctx, username)
 	if err != nil {
 		return false
 	}
-
-	for _, id := range ids {
-		entry, err := s.db.Get(context.Background(), id)
-		if err != nil {
-			return false
-		}
-
-		user, ok := entry.Val.(*models.User)
-		if !ok {
-			return false
-		}
-
-		if user.Username == username {
-			return user.Admin
-		}
+	if user.Username == username {
+		return user.Admin
 	}
 	return false
+}
+
+func (s *Server) userByUsername(ctx context.Context, username string) (*models.User, error) {
+	entry, err := s.db.Get(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	if entry == nil {
+		return nil, errNotFound
+	}
+	user, ok := entry.Val.(*models.User)
+	if !ok {
+		return nil, errors.New("converting error")
+	}
+	return user, nil
 }
