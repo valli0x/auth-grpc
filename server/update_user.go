@@ -26,6 +26,10 @@ func (s *Server) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.Empty, er
 		return resp, errors.New(UserNotFoundError)
 	}
 
+	if s.exits(username) {
+		return resp, errors.New("username is not unique")
+	}
+
 	user := &models.User{
 		ID:       id,
 		Email:    email,

@@ -1,7 +1,9 @@
 package inmem
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestInmem(t *testing.T) {
-	
+
 }

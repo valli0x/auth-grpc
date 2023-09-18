@@ -13,7 +13,7 @@ func (s *Server) Read(ctx context.Context, r *pb.ReadRequest) (*pb.ReadResponse,
 		User: &pb.User{},
 	}
 
-	id := r.User.GetId()
+	id := r.GetId()
 
 	entry, err := s.db.Get(ctx, id)
 	if err != nil {

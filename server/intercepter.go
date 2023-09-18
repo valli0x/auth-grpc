@@ -47,13 +47,13 @@ func (s *Server) valid(authorization []string, method string) bool {
 	username := auth[0]
 	password := auth[1]
 
-	if !s.Exist(username, password) {
+	if !s.checkPass(username, password) {
 		return false
 	}
 
 	switch method {
 	case "/authgrpc.Users/Create", "/authgrpc.Users/Update", "/authgrpc.Users/Delete":
-		if !s.Admin(username) {
+		if !s.admin(username) {
 			return false
 		}
 	}
@@ -62,7 +62,7 @@ func (s *Server) valid(authorization []string, method string) bool {
 }
 
 // It's not very efficient, I know
-func (s *Server) Exist(username, password string) bool {
+func (s *Server) checkPass(username, password string) bool {
 	ids, err := s.db.List(context.Background())
 	if err != nil {
 		return false
@@ -86,7 +86,31 @@ func (s *Server) Exist(username, password string) bool {
 	return false
 }
 
-func (s *Server) Admin(username string) bool {
+func (s *Server) exits(username string) bool {
+	ids, err := s.db.List(context.Background())
+	if err != nil {
+		return false
+	}
+
+	for _, id := range ids {
+		entry, err := s.db.Get(context.Background(), id)
+		if err != nil {
+			return false
+		}
+
+		user, ok := entry.Val.(*models.User)
+		if !ok {
+			return false
+		}
+
+		if user.Username == username {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Server) admin(username string) bool {
 	ids, err := s.db.List(context.Background())
 	if err != nil {
 		return false

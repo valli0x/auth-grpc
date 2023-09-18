@@ -7,7 +7,7 @@ import (
 	pb "github.com/valli0x/grpc-proto/auth-grpc/api"
 )
 
-func (s *Server) List(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
+func (s *Server) List(ctx context.Context, r *pb.Empty) (*pb.ListResponse, error) {
 	resp := &pb.ListResponse{
 		Users: []*pb.User{},
 	}

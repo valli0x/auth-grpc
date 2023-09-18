@@ -7,11 +7,13 @@ import (
 )
 
 func (s *Server) Delete(ctx context.Context, r *pb.DeleteRequest) (*pb.Empty, error) {
-	id := r.User.GetId()
+	resp := &pb.Empty{}
+
+	id := r.GetId()
 
 	if err := s.db.Delete(ctx, id); err != nil {
-		return &pb.Empty{}, err
+		return resp, err
 	}
 
-	return &pb.Empty{}, nil
+	return resp, nil
 }

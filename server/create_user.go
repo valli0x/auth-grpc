@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/valli0x/auth-grpc/models"
@@ -10,13 +11,15 @@ import (
 )
 
 func (s *Server) Create(ctx context.Context, r *pb.CreateRequest) (*pb.CreateResponse, error) {
-	resp := &pb.CreateResponse{
-		User: &pb.User{},
-	}
+	resp := &pb.CreateResponse{}
 
 	email := r.User.GetEmail()
 	username := r.User.GetUsername()
 	password := r.User.GetPassword()
+
+	if s.exits(username) {
+		return resp, errors.New("username is not unique")
+	}
 
 	uuid, err := uuid.GenerateUUID()
 	if err != nil {
@@ -37,6 +40,6 @@ func (s *Server) Create(ctx context.Context, r *pb.CreateRequest) (*pb.CreateRes
 		return nil, err
 	}
 
-	resp.User.Id = user.ID
+	resp.Id = user.ID
 	return resp, nil
 }

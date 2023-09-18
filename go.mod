@@ -2,7 +2,7 @@ module github.com/valli0x/auth-grpc
 
 go 1.20
 
-require github.com/valli0x/grpc-proto v0.0.2
+require github.com/valli0x/grpc-proto v0.0.4
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect

@@ -50,6 +50,10 @@ github.com/valli0x/grpc-proto v0.0.0-20230917181956-e884aaf46c83 h1:gT4OcLxpPHXY
 github.com/valli0x/grpc-proto v0.0.0-20230917181956-e884aaf46c83/go.mod h1:d3Tfira6SKJqX91ovFB/G+Bos0k6hJ2wUsD0SbDM3O8=
 github.com/valli0x/grpc-proto v0.0.2 h1:LLOEZ3sAPoqCwn0yIfPqp7NHBcnUTmdmmwCO7MsCm8o=
 github.com/valli0x/grpc-proto v0.0.2/go.mod h1:d3Tfira6SKJqX91ovFB/G+Bos0k6hJ2wUsD0SbDM3O8=
+github.com/valli0x/grpc-proto v0.0.3 h1:4lt6yHE4jPnHIuuUy4CYihUdyZ+orbVnNlvePvrpoQw=
+github.com/valli0x/grpc-proto v0.0.3/go.mod h1:d3Tfira6SKJqX91ovFB/G+Bos0k6hJ2wUsD0SbDM3O8=
+github.com/valli0x/grpc-proto v0.0.4 h1:/8e2ABX4AF24pLva/mp6naaT9KsKKLGNcjyGWDv3UOU=
+github.com/valli0x/grpc-proto v0.0.4/go.mod h1:d3Tfira6SKJqX91ovFB/G+Bos0k6hJ2wUsD0SbDM3O8=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
