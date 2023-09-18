@@ -27,7 +27,7 @@ func (s *Server) Create(ctx context.Context, r *pb.CreateRequest) (*pb.CreateRes
 		ID:       uuid,
 		Email:    email,
 		Username: username,
-		Password: []byte(password), // sha256 hash
+		Password: []byte(password), // maybe sha256 hash?
 	}
 
 	if err := s.db.Put(ctx, &storage.Entry{

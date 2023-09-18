@@ -3,16 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"net"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/valli0x/auth-grpc/models"
 	"github.com/valli0x/auth-grpc/server"
 	"github.com/valli0x/auth-grpc/storage"
 	"github.com/valli0x/auth-grpc/storage/inmem"
-	pb "github.com/valli0x/grpc-proto/auth-grpc/api"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -25,33 +21,23 @@ func main() {
 	// create database
 	db, err := inmem.NewInmem()
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to create storage: %v", err)
 	}
+
 	// create admin user
 	err = rootUser(db)
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to create root user: %v", err)
 	}
-	// create users grpc handler
-	s, err := server.NewServer(db)
+
+	// create grpc server
+	grpcServer, err := server.NewServer(db)
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to create server: %v", err)
 	}
-	// options grpc server
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(s.ValidToken),
-	}
+	
 	// start grpc server
-	grpcServer := grpc.NewServer(opts...)
-	reflection.Register(grpcServer)
-	pb.RegisterUsersServer(grpcServer, s)
-
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	if err := grpcServer.Serve(lis); err != nil {
+	if err := grpcServer.RunServer(port); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
